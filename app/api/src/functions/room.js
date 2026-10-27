@@ -225,15 +225,16 @@ app.http('player', {
   }
 });
 
-// Spoken voices: Azure AI Speech, one neural voice per persona per language.
+// Spoken voices: Azure AI Speech, one voice per persona per language. The first voice is an Azure HD
+// (DragonHD) voice where one exists for that language; the second is the standard neural voice used if it fails.
 // Only speaks text this API wrote (signed), so the endpoint cannot be used as a general text-to-speech service.
 const VOICES = {
-  en: { Tash: 'en-GB-SoniaNeural', Jay: 'en-GB-RyanNeural', Dave: 'en-GB-ThomasNeural' },
-  es: { Tash: 'es-ES-ElviraNeural', Jay: 'es-ES-AlvaroNeural', Dave: 'es-ES-ArnauNeural' },
-  fr: { Tash: 'fr-FR-DeniseNeural', Jay: 'fr-FR-HenriNeural', Dave: 'fr-FR-AlainNeural' },
-  de: { Tash: 'de-DE-KatjaNeural', Jay: 'de-DE-ConradNeural', Dave: 'de-DE-KillianNeural' },
-  pt: { Tash: 'pt-PT-RaquelNeural', Jay: 'pt-PT-DuarteNeural', Dave: 'pt-BR-AntonioNeural' },
-  ar: { Tash: 'ar-SA-ZariyahNeural', Jay: 'ar-SA-HamedNeural', Dave: 'ar-EG-ShakirNeural' }
+  en: { Tash: ['en-GB-Sonia:DragonHDLatestNeural', 'en-GB-SoniaNeural'], Jay: ['en-GB-Ryan:DragonHDLatestNeural', 'en-GB-RyanNeural'], Dave: ['en-GB-Ollie:DragonHDLatestNeural', 'en-GB-ThomasNeural'] },
+  es: { Tash: ['es-ES-Ximena:DragonHDLatestNeural', 'es-ES-ElviraNeural'], Jay: ['es-ES-Tristan:DragonHDLatestNeural', 'es-ES-AlvaroNeural'], Dave: ['es-MX-Jorge:DragonHDLatestNeural', 'es-ES-ArnauNeural'] },
+  fr: { Tash: ['fr-FR-Vivienne:DragonHDLatestNeural', 'fr-FR-DeniseNeural'], Jay: ['fr-FR-Remy:DragonHDLatestNeural', 'fr-FR-HenriNeural'], Dave: ['fr-CA-Thierry:DragonHDLatestNeural', 'fr-FR-AlainNeural'] },
+  de: { Tash: ['de-DE-Seraphina:DragonHDLatestNeural', 'de-DE-KatjaNeural'], Jay: ['de-DE-Florian:DragonHDLatestNeural', 'de-DE-ConradNeural'], Dave: ['de-DE-KillianNeural'] },
+  pt: { Tash: ['pt-PT-RaquelNeural'], Jay: ['pt-PT-DuarteNeural'], Dave: ['pt-BR-AntonioNeural'] },
+  ar: { Tash: ['ar-SA-ZariyahNeural'], Jay: ['ar-AE-Rashid:DragonHDLatestNeural', 'ar-SA-HamedNeural'], Dave: ['ar-EG-ShakirNeural'] }
 };
 const RATE = { Tash: '0%', Jay: '-3%', Dave: '+4%' };
 const LOCALE = { en: 'en-GB', es: 'es-ES', fr: 'fr-FR', de: 'de-DE', pt: 'pt-PT', ar: 'ar-SA' };
@@ -253,14 +254,20 @@ app.http('speak', {
     const k = `${who}|${lang}|${text}`;
     try {
       if (!audio.has(k)) {
-        const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${VOICES[lang][who]}"><prosody rate="${RATE[who]}">${xml(text)}</prosody></voice></speak>`;
-        const res = await fetch(`https://${SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-          method: 'POST',
-          headers: { 'Ocp-Apim-Subscription-Key': SPEECH_KEY, 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3', 'User-Agent': 'the-room' },
-          body: ssml
-        });
-        if (!res.ok) throw new Error(`speech ${res.status}`);
-        audio.set(k, Buffer.from(await res.arrayBuffer()));
+        let last = 'no voice';
+        for (const name of VOICES[lang][who]) {
+          // HD voices set their own pacing; the rate tweak is only for the standard voices
+          const inner = name.includes('DragonHD') ? xml(text) : `<prosody rate="${RATE[who]}">${xml(text)}</prosody>`;
+          const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}">${inner}</voice></speak>`;
+          const res = await fetch(`https://${SPEECH_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+            method: 'POST',
+            headers: { 'Ocp-Apim-Subscription-Key': SPEECH_KEY, 'Content-Type': 'application/ssml+xml', 'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3', 'User-Agent': 'the-room' },
+            body: ssml
+          });
+          if (res.ok) { audio.set(k, Buffer.from(await res.arrayBuffer())); break; }
+          last = `speech ${res.status} (${name})`;
+        }
+        if (!audio.has(k)) throw new Error(last);
       }
       return { body: audio.get(k), headers: { 'Content-Type': 'audio/mpeg', 'Cache-Control': 'private, max-age=3600' } };
     } catch (err) { return bad(502, 'The voice could not be played: ' + err.message); }
