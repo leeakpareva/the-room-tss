@@ -38,6 +38,7 @@ const RULES = [
   'All clubs and players are fictional. Never mention real leagues, clubs, players, brands or the Premier League.',
   'Do not add details the feed does not state: no positions, distances or numbers unless the feed has them.',
   ORIENTATION,
+  'Event types: PENALTY_CHECK is a penalty appeal checked by VAR and turned down; no penalty was taken or missed. VAR_CHECK then VAR_OVERTURN is a goal ruled out. A RED_CARD after a YELLOW_CARD for the same player is a second yellow.',
   'Substitutions: the player marked ON comes on and the player marked OFF goes off. Never swap them, in any language. A player who has gone off takes no further part.',
   'Halves: minutes up to 45+ are the first half, 46 onwards the second half. Half-time came after 45+4.',
   'No emoji, no hashtags, no exclamation marks, no dashes between clauses, no hype words. Calm, editorial tone.',
