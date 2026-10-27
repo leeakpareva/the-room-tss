@@ -1,0 +1,6 @@
+dist/
+node_modules/
+local.settings.json
+__pycache__/
+*.bak*
+.env

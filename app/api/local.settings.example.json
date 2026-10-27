@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AOAI_ENDPOINT": "https://<your-ai-services-resource>.openai.azure.com",
+    "AOAI_KEY": "<key from the Azure portal - never commit it>",
+    "AOAI_DEPLOYMENT": "gpt-41-mini",
+    "SPEECH_REGION": "swedencentral"
+  }
+}

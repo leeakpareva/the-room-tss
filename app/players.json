@@ -1,0 +1,499 @@
+{
+ "note": "Synthetic tracking data for the fictional match CC-DEM-001 (dataset v2, 40-player squads), written to agree with the event feed: minutes on and off follow the substitution plan and the red card. Volume stats are full-match totals; the app shows them pro rata to the minute. Goals, assists, saves and cards are counted from the feed.",
+ "groups": {
+  "GK": [
+   [
+    "saves",
+    "Saves"
+   ],
+   [
+    "conceded",
+    "Goals conceded"
+   ],
+   [
+    "claims",
+    "High balls claimed"
+   ],
+   [
+    "distribution",
+    "Distribution %"
+   ]
+  ],
+  "DEF": [
+   [
+    "tackles",
+    "Tackles won"
+   ],
+   [
+    "interceptions",
+    "Interceptions"
+   ],
+   [
+    "clearances",
+    "Clearances"
+   ],
+   [
+    "duels",
+    "Duels won"
+   ]
+  ],
+  "MID": [
+   [
+    "passes",
+    "Passes"
+   ],
+   [
+    "pass_pct",
+    "Pass accuracy %"
+   ],
+   [
+    "key_passes",
+    "Key passes"
+   ],
+   [
+    "tackles",
+    "Tackles won"
+   ]
+  ],
+  "WIDE": [
+   [
+    "crosses",
+    "Crosses"
+   ],
+   [
+    "crosses_done",
+    "Crosses found a man"
+   ],
+   [
+    "dribbles",
+    "Dribbles won"
+   ],
+   [
+    "assists",
+    "Assists"
+   ]
+  ],
+  "FWD": [
+   [
+    "shots",
+    "Shots"
+   ],
+   [
+    "on_target",
+    "On target"
+   ],
+   [
+    "goals",
+    "Goals"
+   ],
+   [
+    "aerials",
+    "Aerial duels won"
+   ]
+  ]
+ },
+ "players": {
+  "Jonas Reed": {
+   "pos": "Goalkeeper",
+   "group": "GK",
+   "shirt": 1,
+   "on": 0,
+   "off": 96,
+   "touches": 31,
+   "km": 5.2,
+   "claims": 5,
+   "distribution": 76
+  },
+  "Mason Quill": {
+   "pos": "Right-back",
+   "group": "DEF",
+   "shirt": 2,
+   "on": 0,
+   "off": 96,
+   "touches": 65,
+   "km": 10.1,
+   "tackles": 4,
+   "interceptions": 4,
+   "clearances": 6,
+   "duels": 8
+  },
+  "Darius Wynn": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 4,
+   "on": 0,
+   "off": 96,
+   "touches": 71,
+   "km": 9.7,
+   "tackles": 5,
+   "interceptions": 3,
+   "clearances": 3,
+   "duels": 6
+  },
+  "Callum Voss": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 5,
+   "on": 0,
+   "off": 96,
+   "touches": 53,
+   "km": 10.2,
+   "tackles": 3,
+   "interceptions": 2,
+   "clearances": 3,
+   "duels": 8
+  },
+  "Elias Ward": {
+   "pos": "Left-back",
+   "group": "DEF",
+   "shirt": 3,
+   "on": 0,
+   "off": 92,
+   "touches": 54,
+   "km": 9.6,
+   "tackles": 3,
+   "interceptions": 1,
+   "clearances": 7,
+   "duels": 5
+  },
+  "Andre Solis": {
+   "pos": "Defensive midfielder",
+   "group": "MID",
+   "shirt": 6,
+   "on": 0,
+   "off": 96,
+   "touches": 77,
+   "km": 10.7,
+   "passes": 40,
+   "pass_pct": 90,
+   "key_passes": 1,
+   "tackles": 4
+  },
+  "Malik Rowan": {
+   "pos": "Central midfielder",
+   "group": "MID",
+   "shirt": 8,
+   "on": 0,
+   "off": 85,
+   "touches": 58,
+   "km": 9.6,
+   "passes": 51,
+   "pass_pct": 90,
+   "key_passes": 3,
+   "tackles": 3
+  },
+  "Theo Mercer": {
+   "pos": "Attacking midfielder",
+   "group": "MID",
+   "shirt": 10,
+   "on": 0,
+   "off": 89,
+   "touches": 67,
+   "km": 10.2,
+   "passes": 60,
+   "pass_pct": 82,
+   "key_passes": 1,
+   "tackles": 2
+  },
+  "Nolan Crest": {
+   "pos": "Right winger",
+   "group": "WIDE",
+   "shirt": 7,
+   "on": 0,
+   "off": 74,
+   "touches": 39,
+   "km": 8.7,
+   "crosses": 5,
+   "crosses_done": 2,
+   "dribbles": 3
+  },
+  "Leon Vale": {
+   "pos": "Striker",
+   "group": "FWD",
+   "shirt": 9,
+   "on": 0,
+   "off": 96,
+   "touches": 32,
+   "km": 10.4,
+   "shots": 4,
+   "on_target": 2,
+   "aerials": 4
+  },
+  "Jalen Pike": {
+   "pos": "Left winger",
+   "group": "WIDE",
+   "shirt": 11,
+   "on": 0,
+   "off": 67,
+   "touches": 35,
+   "km": 7.1,
+   "crosses": 3,
+   "crosses_done": 1,
+   "dribbles": 3
+  },
+  "Kian Holt": {
+   "pos": "Right winger",
+   "group": "WIDE",
+   "shirt": 17,
+   "on": 67,
+   "off": 96,
+   "touches": 14,
+   "km": 3.4,
+   "crosses": 2,
+   "crosses_done": 1,
+   "dribbles": 1
+  },
+  "Ruben Shaw": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 14,
+   "on": 92,
+   "off": 96,
+   "touches": 2,
+   "km": 0.4,
+   "tackles": 0,
+   "interceptions": 0,
+   "clearances": 0,
+   "duels": 0
+  },
+  "Milo Trent": {
+   "pos": "Central midfielder",
+   "group": "MID",
+   "shirt": 16,
+   "on": 85,
+   "off": 96,
+   "touches": 9,
+   "km": 1.2,
+   "passes": 8,
+   "pass_pct": 84,
+   "key_passes": 0,
+   "tackles": 0
+  },
+  "Cassian Drew": {
+   "pos": "Attacking midfielder",
+   "group": "MID",
+   "shirt": 18,
+   "on": 89,
+   "off": 96,
+   "touches": 5,
+   "km": 0.8,
+   "passes": 3,
+   "pass_pct": 90,
+   "key_passes": 0,
+   "tackles": 0
+  },
+  "Devon Hale": {
+   "pos": "Forward",
+   "group": "FWD",
+   "shirt": 19,
+   "on": 74,
+   "off": 96,
+   "touches": 9,
+   "km": 2.4,
+   "shots": 1,
+   "on_target": 0,
+   "aerials": 1
+  },
+  "Stefan Rook": {
+   "pos": "Goalkeeper",
+   "group": "GK",
+   "shirt": 1,
+   "on": 0,
+   "off": 96,
+   "touches": 34,
+   "km": 5.2,
+   "claims": 2,
+   "distribution": 73
+  },
+  "Owen Marr": {
+   "pos": "Right-back",
+   "group": "DEF",
+   "shirt": 2,
+   "on": 0,
+   "off": 96,
+   "touches": 52,
+   "km": 9.9,
+   "tackles": 2,
+   "interceptions": 3,
+   "clearances": 8,
+   "duels": 4
+  },
+  "Bruno Kade": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 4,
+   "on": 0,
+   "off": 96,
+   "touches": 66,
+   "km": 10.2,
+   "tackles": 3,
+   "interceptions": 1,
+   "clearances": 7,
+   "duels": 7
+  },
+  "Nico Ferra": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 5,
+   "on": 0,
+   "off": 96,
+   "touches": 56,
+   "km": 10.4,
+   "tackles": 5,
+   "interceptions": 3,
+   "clearances": 4,
+   "duels": 6
+  },
+  "Silas Penn": {
+   "pos": "Left-back",
+   "group": "DEF",
+   "shirt": 3,
+   "on": 0,
+   "off": 96,
+   "touches": 60,
+   "km": 10.8,
+   "tackles": 4,
+   "interceptions": 2,
+   "clearances": 7,
+   "duels": 6
+  },
+  "Idris Cole": {
+   "pos": "Defensive midfielder",
+   "group": "MID",
+   "shirt": 6,
+   "on": 0,
+   "off": 81,
+   "touches": 51,
+   "km": 9.7,
+   "passes": 41,
+   "pass_pct": 89,
+   "key_passes": 2,
+   "tackles": 2
+  },
+  "Luca Dane": {
+   "pos": "Central midfielder",
+   "group": "MID",
+   "shirt": 8,
+   "on": 0,
+   "off": 87,
+   "touches": 73,
+   "km": 10.1,
+   "passes": 46,
+   "pass_pct": 84,
+   "key_passes": 2,
+   "tackles": 2
+  },
+  "Mateo Arden": {
+   "pos": "Attacking midfielder",
+   "group": "MID",
+   "shirt": 10,
+   "on": 0,
+   "off": 69,
+   "touches": 50,
+   "km": 8.3,
+   "passes": 47,
+   "pass_pct": 83,
+   "key_passes": 1,
+   "tackles": 3
+  },
+  "Rafael Venn": {
+   "pos": "Striker",
+   "group": "FWD",
+   "shirt": 9,
+   "on": 0,
+   "off": 91,
+   "touches": 34,
+   "km": 9.1,
+   "shots": 4,
+   "on_target": 1,
+   "aerials": 4
+  },
+  "Kellan Frost": {
+   "pos": "Right winger",
+   "group": "WIDE",
+   "shirt": 7,
+   "on": 0,
+   "off": 82,
+   "touches": 39,
+   "km": 9.1,
+   "crosses": 3,
+   "crosses_done": 1,
+   "dribbles": 3
+  },
+  "Ivo March": {
+   "pos": "Left winger",
+   "group": "WIDE",
+   "shirt": 11,
+   "on": 0,
+   "off": 78,
+   "touches": 31,
+   "km": 8.8,
+   "crosses": 6,
+   "crosses_done": 1,
+   "dribbles": 2
+  },
+  "Rian Locke": {
+   "pos": "Centre-back",
+   "group": "DEF",
+   "shirt": 14,
+   "on": 82,
+   "off": 96,
+   "touches": 10,
+   "km": 1.4,
+   "tackles": 0,
+   "interceptions": 0,
+   "clearances": 1,
+   "duels": 1
+  },
+  "Emil Soren": {
+   "pos": "Central midfielder",
+   "group": "MID",
+   "shirt": 16,
+   "on": 69,
+   "off": 96,
+   "touches": 18,
+   "km": 3.4,
+   "passes": 16,
+   "pass_pct": 88,
+   "key_passes": 1,
+   "tackles": 1
+  },
+  "Dante Moss": {
+   "pos": "Defensive midfielder",
+   "group": "MID",
+   "shirt": 17,
+   "on": 87,
+   "off": 96,
+   "touches": 6,
+   "km": 1.0,
+   "passes": 4,
+   "pass_pct": 84,
+   "key_passes": 0,
+   "tackles": 0
+  },
+  "Marek Silva": {
+   "pos": "Right winger",
+   "group": "WIDE",
+   "shirt": 19,
+   "on": 78,
+   "off": 96,
+   "touches": 8,
+   "km": 2.0,
+   "crosses": 2,
+   "crosses_done": 0,
+   "dribbles": 0
+  },
+  "Jude Arlen": {
+   "pos": "Striker",
+   "group": "FWD",
+   "shirt": 20,
+   "on": 91,
+   "off": 96,
+   "touches": 2,
+   "km": 0.5,
+   "shots": 0,
+   "on_target": 0,
+   "aerials": 0
+  }
+ }
+}

@@ -1,0 +1,899 @@
+<title>The Room</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,400;100,500;100,600;100,700;100,800;125,800;125,900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: phone-first live match screen (Faith's MatchV2); on desktop the same order splits into feed centre, stats left, voices right. Matchday (dark) is the default. */
+:root {
+  --ground:#010101; --pitch-green:#0b3f23; --pitch-teal:#0f4a5c;
+  --panel:#0b120e; --panel-raised:#15211b; --line:#2b3b33; --line-strong:#6b8578;
+  --head:#000000; --on-head:#f8759d; --ink-on-head:#ffffff;
+  --brand-pink:#f8759d; --on-pink:#000000;
+  --ink:#ffffff; --ink-soft:#dde8e2; --ink-muted:#a8bcb1;
+  --live:#e8643a; --on-live:#000000;
+  --tash:#3fb4dc; --jay:#2fbf71; --dave:#f8759d; --on-persona:#000000;
+  --home:#3fb4dc; --away:#e8643a;
+  --font-display:"Archivo", Arial, sans-serif; --font-body:"Archivo", Arial, sans-serif; --font-data:"IBM Plex Mono", Menlo, monospace;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px;
+  --radius-sm:2px; --radius-md:4px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --ground:#f3f6f4; --pitch-green:#dceee4; --pitch-teal:#d6ebf1;
+  --panel:#ffffff; --panel-raised:#e7efea; --line:#c7d6cd; --line-strong:#6a7f74;
+  --head:#06120c; --brand-pink:#b8325b; --on-pink:#ffffff;
+  --ink:#06120c; --ink-soft:#1d2d24; --ink-muted:#4f6358;
+  --live:#b2441d; --on-live:#ffffff;
+  --tash:#00698a; --jay:#0f7a42; --dave:#b8325b; --on-persona:#ffffff;
+  --home:#00698a; --away:#b2441d; color-scheme: light;
+} }
+:root[data-theme="light"] {
+  --ground:#f3f6f4; --pitch-green:#dceee4; --pitch-teal:#d6ebf1;
+  --panel:#ffffff; --panel-raised:#e7efea; --line:#c7d6cd; --line-strong:#6a7f74;
+  --head:#06120c; --brand-pink:#b8325b; --on-pink:#ffffff;
+  --ink:#06120c; --ink-soft:#1d2d24; --ink-muted:#4f6358;
+  --live:#b2441d; --on-live:#ffffff;
+  --tash:#00698a; --jay:#0f7a42; --dave:#b8325b; --on-persona:#ffffff;
+  --home:#00698a; --away:#b2441d; color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  background: var(--ground);
+  background-image: linear-gradient(180deg, var(--ground) 0%, var(--ground) 35%, var(--pitch-green) 75%, var(--pitch-teal) 100%);
+  background-attachment: fixed;
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 22px;
+}
+body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--head); }
+button { font: inherit; color: inherit; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.wide { font-family: var(--font-display); font-stretch: 125%; text-transform: uppercase; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.lbl { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+
+/* Top bar + scoreboard */
+.top { position: sticky; top: env(safe-area-inset-top,0px); z-index: 5; background: var(--head); color: var(--ink-on-head); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left,0px)); padding-right: max(16px, env(safe-area-inset-right,0px)); padding-block: 12px 0; }
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand b { font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 16px; color: var(--on-head); letter-spacing: .02em; }
+.brand i { width: 1px; height: 16px; background: var(--line); }
+.brand span { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #ffffffb3; }
+.livepill { display: inline-flex; align-items: center; gap: 6px; background: var(--live); color: var(--on-live); border-radius: 999px; padding: 2px 10px; font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 13px; letter-spacing: .08em; }
+.livepill::before { content:""; width:7px; height:7px; border-radius:50%; background: currentColor; }
+.livepill.ft { background: #ffffff; color: #000; }
+.livepill.ft::before { display: none; }
+.right-tools { display: flex; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid #ffffff40; border-radius: var(--radius-md); overflow: hidden; }
+.seg button { background: transparent; border: 0; color: #ffffffa6; font: 600 12px/16px var(--font-body); letter-spacing: .06em; padding: 6px 8px; min-height: 32px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: #ffffff; color: #000; }
+
+.score { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 8px; padding: 12px 0; }
+.team { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.team.away { justify-content: flex-end; text-align: right; }
+.crest { flex: none; width: 34px; height: 34px; border-radius: var(--radius-sm); display: grid; place-items: center; font: 600 11px var(--font-data); color: #000; }
+.crest.h { background: #3fb4dc; } .crest.a { background: #e8643a; }
+.tname { font-weight: 800; font-size: 15px; line-height: 18px; text-transform: uppercase; }
+@media (max-width: 560px) { .tname { font-size: 12px; line-height: 15px; } .scoreline { font-size: 30px; line-height: 34px; } .crest { display: none; } .vtab small { display: none; } }
+.scorers { font: 500 12px/16px var(--font-data); color: #c9d6cf; }
+.scoreline { font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 40px; line-height: 44px; padding: 0 6px; border-radius: var(--radius-md); transition: background .2s; }
+.scoreline.flash { background: var(--live); color: #000; }
+
+.vtabs { display: flex; border-top: 1px solid #2b3b33; }
+.vtab { flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 4px; border: 0; background: transparent; cursor: pointer; font: 600 14px/18px var(--font-body); color: #a8bcb1; min-height: 56px; }
+.vtab[aria-pressed="true"] { color: #fff; box-shadow: inset 0 -3px 0 var(--acc); }
+.vtab small { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; color: #a8bcb1; }
+.av { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 800 13px var(--font-display); font-stretch: 125%; color: #000; background: var(--acc); }
+.av.lg { width: 44px; height: 44px; font-size: 16px; }
+img.av { object-fit: cover; box-shadow: 0 0 0 2px var(--acc); }
+.is-tash { --acc: #3fb4dc; } .is-jay { --acc: #2fbf71; } .is-dave { --acc: #f8759d; }
+:root[data-theme="light"] .panel .is-tash, :root[data-theme="light"] .panel.is-tash { --acc: var(--tash); }
+
+/* Page */
+main { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left,0px)); padding-right: max(16px, env(safe-area-inset-right,0px)); padding-block: 20px 40px; display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; }
+@media (min-width: 980px) {
+  main { grid-template-columns: 300px minmax(0,1fr) 320px; align-items: start; }
+  .col-l { grid-column: 1; grid-row: 1 / span 2; } .col-c { grid-column: 2; } .col-r { grid-column: 3; grid-row: 1 / span 2; }
+}
+.col { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.phead { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--head); color: #f8759d; padding: 8px 12px; border-bottom: 1px solid var(--line); font-family: var(--font-display); font-stretch: 125%; font-weight: 800; font-size: 13px; line-height: 18px; letter-spacing: .06em; text-transform: uppercase; }
+.phead small { font-family: var(--font-body); font-stretch: 100%; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 12px; color: #ffffffb3; }
+.pbody { padding: 12px; }
+
+/* Insight */
+.insight { display: flex; flex-direction: column; gap: 12px; }
+.kicker { display: flex; align-items: center; gap: 8px; }
+.kicker i { width: 24px; height: 3px; background: var(--acc); }
+.kicker .lbl { color: var(--acc); }
+.insight h1 { margin: 0; font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: clamp(24px, 4vw, 32px); line-height: 1.1; text-transform: uppercase; text-wrap: balance; }
+.say { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 12px; align-items: start; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--acc); border-radius: var(--radius-md); padding: 12px; }
+.say p { margin: 2px 0 0; font-size: 18px; line-height: 26px; font-weight: 500; transition: opacity .15s; }
+.say .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.say .min { color: var(--live); font: 500 13px var(--font-data); }
+.facts { font-size: 14px; color: var(--ink-muted); margin: 0; }
+.facts b { color: var(--ink); font-weight: 600; }
+
+/* Controls */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { font: 600 15px/20px var(--font-body); border-radius: var(--radius-md); padding: 10px 16px; border: 1px solid var(--line-strong); background: var(--panel-raised); color: var(--ink); cursor: pointer; min-height: 44px; }
+.btn.primary { background: var(--live); color: var(--on-live); border-color: var(--live); min-width: 110px; }
+.scrub { flex: 1 1 200px; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.scrub input { flex: 1; accent-color: var(--live); min-width: 0; }
+
+/* Tags */
+.tag { display: inline-block; font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: var(--radius-sm); border: 1px solid var(--line-strong); color: var(--ink); white-space: nowrap; }
+.tag.goal { background: var(--live); border-color: var(--live); color: var(--on-live); }
+.tag.var { border-color: var(--tash); color: var(--tash); }
+.tag.card { border-color: #e3c34a; color: #e3c34a; }
+.tag.red { background: #d8392b; border-color: #d8392b; color: #fff; }
+.tag.ft { background: var(--ink); border-color: var(--ink); color: var(--ground); }
+
+/* Three fans */
+.three { display: grid; gap: 8px; }
+.fan { display: grid; grid-template-columns: 44px minmax(0,1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.fan:last-child { border-bottom: 0; }
+.fan .nm { font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 15px; text-transform: uppercase; }
+.fan .md { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--acc); }
+.fan p { margin: 4px 0 0; font-size: 15px; line-height: 22px; }
+:root[data-theme="light"] .fan .md, .lightfix .fan .md { color: var(--ink-muted); }
+
+/* Momentum */
+.mom { display: flex; align-items: stretch; gap: 3px; height: 96px; }
+.mom > div { flex: 1 1 0; display: flex; flex-direction: column; min-width: 0; }
+.mom .up, .mom .dn { flex: 1 1 0; display: flex; }
+.mom .up { align-items: flex-end; } .mom .dn { align-items: flex-start; }
+.mom .mid { height: 1px; background: var(--line-strong); }
+.mom span { display: block; width: 100%; border-radius: 2px; }
+.mom .up span { background: var(--home); border-radius: 2px 2px 0 0; }
+.mom .dn span { background: var(--away); border-radius: 0 0 2px 2px; }
+.mom .fut span { opacity: .12; }
+.legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-muted); }
+
+/* Stats */
+.stat { display: grid; grid-template-columns: 40px minmax(0,1fr) 40px; gap: 8px; align-items: center; padding: 6px 0; }
+.stat .v { font: 600 20px/24px var(--font-data); }
+.stat .v.a { text-align: right; }
+.stat .bars { display: flex; gap: 2px; height: 8px; margin-top: 4px; }
+.stat .bars i { display: block; border-radius: 2px; min-width: 2px; }
+.stat .bars .h { background: var(--home); } .stat .bars .a { background: var(--away); }
+.stat .lbl { text-align: center; }
+
+/* Timeline */
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 48px minmax(0,1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.feed li:last-child { border-bottom: 0; }
+.feed li.new { animation: slide .2s ease-out; }
+@keyframes slide { from { transform: translateY(-8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.feed .m { color: var(--live); font: 500 13px var(--font-data); padding-top: 2px; }
+.feed .hd { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+.feed .q { margin: 0; padding-left: 8px; border-left: 3px solid var(--acc); font-size: 15px; line-height: 22px; }
+.feed .empty { display: block; color: var(--ink-muted); padding: 12px 0; }
+select { font: 600 13px var(--font-body); background: var(--panel-raised); color: var(--ink); border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 6px 8px; min-height: 36px; max-width: 100%; }
+
+/* Players */
+table.pt { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.pt th { text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--on-pink); background: var(--brand-pink); padding: 6px 8px; }
+table.pt td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+table.pt td.n, table.pt th.n { text-align: right; font-family: var(--font-data); }
+table.pt tr { cursor: pointer; }
+table.pt tr.sel td { background: var(--panel-raised); }
+table.pt tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--live); }
+
+/* The After */
+.after { display: none; }
+.after.on { display: block; }
+.after h2 { margin: 0 0 8px; font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: clamp(28px, 5vw, 40px); line-height: 1.05; color: var(--brand-pink); text-transform: uppercase; }
+.after .lede { font-size: 17px; line-height: 25px; color: var(--ink-soft); margin: 0 0 12px; }
+.keym { display: grid; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+.keym li { display: grid; grid-template-columns: 48px 70px minmax(0,1fr); gap: 8px; font-size: 14px; align-items: center; }
+
+.src { margin-top: 6px; font: 500 11px/14px var(--font-data); letter-spacing: .02em; color: var(--ink-muted); }
+.writing { color: var(--ink-muted) !important; font-style: italic; }
+.ask { display: flex; flex-direction: column; gap: 6px; }
+.askrow { display: flex; gap: 8px; }
+.askrow input { flex: 1; min-width: 0; font: 400 15px var(--font-body); background: var(--panel); color: var(--ink); border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 10px 12px; min-height: 44px; }
+.answer { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--acc); border-radius: var(--radius-md); padding: 12px; font-size: 15px; line-height: 22px; }
+.community { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--panel); border: 1px dashed var(--line-strong); border-radius: var(--radius-md); padding: 12px; font-size: 14px; }
+.foot { font-size: 12px; color: var(--ink-muted); }
+[dir="rtl"] .say p, [dir="rtl"] .fan p, [dir="rtl"] .q { font-size: 1.05em; }
+[dir="rtl"] .team.away { justify-content: flex-start; text-align: left; } [dir="rtl"] .team:not(.away) { text-align: right; }
+[dir="rtl"] .say { border-left: 1px solid var(--line); border-right: 3px solid var(--acc); }
+[dir="rtl"] .feed .q { padding-left: 0; padding-right: 8px; border-left: 0; border-right: 3px solid var(--acc); }
+[dir="rtl"] table.pt th, [dir="rtl"] table.pt td { text-align: right; } [dir="rtl"] table.pt td.n, [dir="rtl"] table.pt th.n { text-align: left; }
+.brand .tss { font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 16px; color: #d75a32; letter-spacing: .02em; }
+.why { margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-soft); }
+.why b { color: var(--acc); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; margin-inline-end: 6px; }
+.howmade { font-size: 13px; color: var(--ink-muted); }
+.howmade summary { cursor: pointer; font-weight: 600; }
+.howmade ol { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 4px; }
+.howmade .ag { color: var(--ink); font-weight: 600; }
+.modehelp { flex-basis: 100%; margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.iconbtn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px 10px; font: 600 12px/16px var(--font-body); color: var(--ink); cursor: pointer; min-height: 32px; }
+.iconbtn[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.persona-note { font-size: 11px; color: var(--ink-muted); }
+.pcard { padding: 12px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.pcard h3 { margin: 0; font-family: var(--font-display); font-stretch: 125%; font-weight: 900; font-size: 18px; text-transform: uppercase; }
+.pcard .pos { font-size: 12px; color: var(--ink-muted); }
+.pgrid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.pgrid div { background: var(--panel-raised); border-radius: var(--radius-sm); padding: 6px 8px; }
+.pgrid b { display: block; font: 600 18px/22px var(--font-data); }
+.pgrid span { font-size: 11px; line-height: 14px; color: var(--ink-muted); }
+.pcard .src { margin: 0; }
+.brand .tsslogo { height: 22px; width: auto; display: block; }
+a.community { color: var(--ink); text-decoration: none; }
+a.community .ccta { color: var(--live); white-space: nowrap; }
+a.community:hover .ccta, a.community:focus-visible .ccta { text-decoration: underline; }
+.insight .cprompt { margin-top: 4px; }
+.after .cprompt { margin-top: 16px; }
+.ptwrap { overflow: auto; max-height: 420px; }
+.ptwrap table.pt tr:first-child th { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+.livepill { white-space: nowrap; }
+@media (max-width: 560px) {
+  .bar { gap: 8px; row-gap: 8px; }
+  .right-tools { display: contents; }
+  .brand { order: 1; } #live { order: 2; margin-inline-start: auto; } #club { order: 3; } #langs { order: 4; margin-inline-start: auto; }
+  .seg button { padding: 6px 7px; letter-spacing: .02em; }
+}
+@media (prefers-reduced-motion: reduce) { .feed li.new { animation: none; } .scoreline { transition: none; } .scoreline.flash { background: transparent; color: inherit; } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="bar">
+      <div class="brand"><b>THE ROOM</b><img class="tsslogo" src="tss-logo.png" alt="The Sporting Society" hidden onload="this.hidden=false;this.nextElementSibling.hidden=true" onerror="this.remove()"><span class="tss" aria-label="The Sporting Society">TSS</span></div>
+      <div class="right-tools">
+        <div class="seg" id="club" role="group" aria-label="Your side"></div>
+        <div class="seg" id="langs" role="group" aria-label="Language"></div>
+        <span class="livepill" id="live">LIVE 0'</span>
+      </div>
+    </div>
+    <div class="score" aria-live="polite" dir="ltr">
+      <div class="team"><span class="crest h" id="hcode"></span><div><div class="tname" id="hname"></div><div class="scorers" id="hsc"></div></div></div>
+      <div class="scoreline" id="scoreline">0 – 0</div>
+      <div class="team away"><div><div class="tname" id="aname"></div><div class="scorers" id="asc"></div></div><span class="crest a" id="acode"></span></div>
+    </div>
+    <div class="vtabs" id="vtabs" role="group" aria-label="Who is commentating"></div>
+  </div>
+</header>
+
+<main>
+  <div class="col col-c">
+    <section class="insight" aria-label="Main insight" id="insightSec">
+      <div class="toggle-row"><div class="kicker"><i></i><span class="lbl" id="kicker"></span></div><button class="iconbtn" id="voiceBtn" aria-pressed="false" type="button"></button></div>
+      <h1 id="headline"></h1>
+      <div class="say" id="say">
+        <span class="av lg" id="sayAv"></span>
+        <div><div class="who"><span class="min" id="sayMin"></span><span class="lbl" id="sayWho"></span></div><p id="sayLine"></p><div class="src" id="saySrc" dir="ltr"></div></div>
+      </div>
+      <p class="why" id="why" hidden></p>
+      <details class="howmade" id="howmade" hidden><summary id="howLbl"></summary><ol id="trace"></ol></details>
+      <p class="facts"><b id="factsLbl">Match facts:</b> <span id="facts"></span></p>
+      <a class="community cprompt" id="commKick" target="_blank" rel="noopener" hidden><span class="ctext"></span><strong class="ccta"></strong></a>
+    </section>
+
+    <div class="controls" aria-label="Match replay">
+      <button class="btn primary" id="play">Kick off</button>
+      <button class="btn" id="step">Next moment</button>
+      <div class="scrub"><input type="range" id="scrub" min="0" max="19" value="0" aria-label="Match moment"><span class="num lbl" id="pos" dir="ltr">1/20</span></div>
+      <div class="seg" id="speed" role="group" aria-label="Replay speed" style="border-color: var(--line-strong)"></div>
+      <div class="seg" id="mode" role="group" aria-label="Commentary source" style="border-color: var(--line-strong)"><button data-m="live" aria-pressed="true" id="modeLive">Live AI</button><button data-m="prep" aria-pressed="false" id="modePrep">Prepared</button></div>
+      <p class="modehelp" id="modeHelp"></p>
+    </div>
+
+    <form class="ask" id="askForm" autocomplete="off">
+      <label class="lbl" for="askQ" id="askLbl">Ask Tash about the match</label>
+      <div class="askrow"><input id="askQ" maxlength="240"><button class="btn" id="askBtn" type="submit">Ask</button></div>
+      <div class="answer" id="askOut" hidden></div>
+    </form>
+
+    <section class="panel after" id="after" aria-label="The After">
+      <div class="phead"><span id="afterLbl">The After</span> <small id="afterSub">Full-time recap</small></div>
+      <div class="pbody">
+        <h2 id="afterHead"></h2>
+        <p class="lede" id="afterLede"></p>
+        <div class="three" id="afterThree"></div>
+        <div class="three" id="afterPlayer" hidden></div>
+        <div class="lbl" style="margin-top:16px" id="decidedLbl">Moments that decided it</div>
+        <ul class="keym" id="keym"></ul>
+        <a class="community cprompt" id="commAfter" target="_blank" rel="noopener"><span class="ctext"></span><strong class="ccta"></strong></a>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Timeline">
+      <div class="phead"><span id="feedLbl">Timeline</span> <small id="feedNote">Newest first</small></div>
+      <div class="pbody"><ul class="feed" id="feed"></ul></div>
+    </section>
+
+    <section class="panel" aria-label="Compare the three voices">
+      <div class="phead"><span id="threeLbl">Compare all three</span> <button class="iconbtn" id="cmpBtn" type="button" aria-pressed="false" style="color:#fff;border-color:#ffffff60"></button></div>
+      <div class="pbody" id="threeBody" hidden><div class="lbl" id="threeMin" style="margin-bottom:4px"></div><div class="three" id="three"></div></div>
+    </section>
+  </div>
+
+  <div class="col col-l">
+    <section class="panel" aria-label="Momentum">
+      <div class="phead"><span id="momLbl">Momentum</span> <small id="momSub">Pressure per moment</small></div>
+      <div class="pbody">
+        <div class="mom" id="mom" role="img" aria-label="Momentum by match moment"></div>
+        <div class="legend num" style="margin-top:6px" dir="ltr"><span>0'</span><span>HT</span><span>FT</span></div>
+        <div class="legend" style="margin-top:8px"><span style="color:var(--home)" id="lgH"></span><span style="color:var(--away)" id="lgA"></span></div>
+        <p style="margin:10px 0 0;font-size:14px;line-height:20px"><strong id="shiftLbl">What the shift means:</strong> <span id="shift"></span></p>
+      </div>
+    </section>
+    <section class="panel" aria-label="Match stats">
+      <div class="phead"><span id="statsLbl">Match stats</span> <small id="statsSub">Counted from events</small></div>
+      <div class="pbody" id="stats"></div>
+    </section>
+  </div>
+
+  <div class="col col-r">
+    <section class="panel" aria-label="Player focus">
+      <div class="phead"><span id="pfLbl">Player focus</span> <small id="pfSub">Tap a player</small></div>
+      <div class="ptwrap"><table class="pt" id="players"></table></div>
+      <div class="pbody" id="pfocus" style="font-size:14px;line-height:20px;color:var(--ink-muted)"></div>
+      <div class="pcard" id="pcard" hidden></div>
+    </section>
+    <a class="community cprompt" id="commSide" target="_blank" rel="noopener"><span class="ctext"></span><strong class="ccta"></strong></a>
+    <p class="foot" id="foot"></p>
+  </div>
+</main>
+
+<script>
+const DATA = /*DATA*/null;
+const M = DATA.match, EV = DATA.events, NR = DATA.narratives, ST = DATA.stats;
+const P = { Tash: { key:'tash' }, Jay: { key:'jay' }, Dave: { key:'dave' } };
+const LANGS = { en:'EN', es:'ES', fr:'FR', de:'DE', pt:'PT', ar:'AR' };
+const POS = ['Goalkeeper','Right-back','Centre-back','Left-back','Full-back','Defensive midfielder','Central midfielder','Attacking midfielder','Right winger','Left winger','Striker','Forward'];
+const SK = ['saves','conceded','claims','distribution','tackles','interceptions','clearances','duels','passes','pass_pct','key_passes','crosses','crosses_done','dribbles','assists','shots','on_target','goals','aerials','cards'];
+const TK = ['MATCH_STATE','CHANCE','GOAL','MOMENTUM','SAVE','VAR_CHECK','VAR_OVERTURN','YELLOW_CARD','RED_CARD','SUBSTITUTION','PENALTY_CHECK','FULL_TIME'];
+const zip = (keys, vals) => Object.fromEntries(keys.map((k, i) => [k, vals[i]]));
+
+// Every fixed string on screen, in all six languages. Team and player names stay as they are.
+const UI = {
+  en: {
+    play:'Play', pause:'Pause', kick:'Kick off', next:'Next moment', again:'Replay match', facts:'Match facts:',
+    live:'Live AI', prep:'Prepared',
+    helpLive:'Live AI: five agents in Microsoft Foundry write each line from the match feed as it happens.',
+    helpPrep:'Prepared: the team’s checked lines, written in advance in six languages.',
+    ask:w=>`Ask ${w} about the match`, askPh:'Why are Northbridge on top?', askBtn:'Ask', at:(w,m)=>`${w}, at ${m}:`,
+    askFail:w=>`${w} could not answer just now. Check your connection and ask again.`, answered:m=>`Answered live by Azure AI · ${m} · from the match feed only`,
+    feed:'Timeline', newest:'Newest first', following:n=>`Following ${n}`, none:n=>`No moments for ${n} yet.`,
+    compare:'Compare all three voices', show:'Show', hide:'Hide',
+    mom:'Momentum', momSub:'Pressure per moment', att:c=>`${c} attacking`, shiftLbl:'What the shift means:',
+    even:(s,h)=>`Even over the last four moments (${s}): ${h} pressure points each.`,
+    lead:(t,a,b,s)=>`${t} lead the pressure ${a} to ${b} over the last four moments (${s}).`, to:'to',
+    stats:'Match stats', statsSub:'Counted from events', st:['Goals','Big moments in attack','Keeper saves','Cards','Pressure index'],
+    pf:'Player focus', pfSub:'Tap a player', pfIntro:'Follow one player through the match: a stat card for their position, every moment they were part of, and a personal recap at full time.',
+    th:['Player','Club','Goals','Moments'], pfNow:(n,k)=>`${n}: ${k} key moments so far.`, pfClear:'The timeline now follows this player. Tap again to clear.',
+    touches:'Touches', km:'Distance (km)', mins:'Minutes', synth:'Synthetic tracking data, shown to the minute.',
+    after:'The After', afterSub:'Full-time recap', decided:'Moments that decided it', yourPlayer:n=>`Your player: ${n}`,
+    comm:'Watching with mates? The TSS community screens every matchday.', cta:'Join on WhatsApp',
+    foot:'Demo with synthetic data. The competition, clubs, venue and players are fictional. Tash, Jay and Dave are fictional AI-generated personas. Spoken voices use Azure AI Speech.',
+    written:(m,s)=>`Written live by Azure AI · ${m} · ${s}s`, writingSrc:'Writing live with Azure AI', prepLine:'Prepared line', prepFallback:'Prepared line (live AI unavailable)',
+    why:'Why it matters', how:'How this line was made: five agents', voiceOn:'Voice on', voiceOff:'Voice off',
+    pill:['KICK-OFF','LIVE','FULL TIME'], neutral:'Neutral', side:'Your side',
+    modes:['Analyst','Casual','Banter'], kickers:['The insight','The story so far','Overheard in The Room'],
+    writing:['Tash is working it out','Jay is typing','Dave is thinking of one'], persona:'Fictional AI-generated persona',
+    tags:['Kick-off','Chance','Goal','Shift','Save','VAR check','No goal','Yellow','Red','Sub','Pen check','FT'],
+    hl:{ opening:'Both sides feeling it out', ahead:(p,t)=>`${p} puts ${t} ahead`, level:(p,s)=>`${p} levels it at ${s}`, makes:(p,s)=>`${p} makes it ${s}`,
+      chance:(p,c)=>`${p} goes close for ${c}`, save:(p,c)=>`${p} keeps ${c} in it`, mom:t=>`${t} are turning the screw`, varc:p=>`VAR is looking at ${p}'s goal`,
+      varo:'Goal ruled out. Still level.', yellow:p=>`${p} goes in the book`, red:(p,c)=>`${p} is off. ${c} down to ten.`, sub:(p,t)=>`${p} on. ${t} go wide.`,
+      pen:p=>`Penalty shout for ${p}. Waved away.`, draw:s=>`All square at ${s}`, comeback:t=>`${t} complete the comeback`, win:t=>`${t} take the win` },
+    pos:POS,
+    sl:['Saves','Goals conceded','High balls claimed','Distribution %','Tackles won','Interceptions','Clearances','Duels won','Passes','Pass accuracy %','Key passes','Crosses','Crosses completed','Dribbles won','Assists','Shots','On target','Goals','Aerials won','Cards']
+  },
+  es: {
+    play:'Reproducir', pause:'Pausa', kick:'Saque inicial', next:'Siguiente momento', again:'Repetir partido', facts:'Datos del partido:',
+    live:'IA en directo', prep:'Preparado',
+    helpLive:'IA en directo: cinco agentes en Microsoft Foundry escriben cada frase a partir del registro del partido, en el momento.',
+    helpPrep:'Preparado: frases revisadas por el equipo, escritas de antemano en seis idiomas.',
+    ask:w=>`Pregunta a ${w} sobre el partido`, askPh:'¿Por qué domina Northbridge?', askBtn:'Preguntar', at:(w,m)=>`${w}, en el ${m}:`,
+    askFail:w=>`${w} no puede responder ahora. Revisa tu conexión y vuelve a preguntar.`, answered:m=>`Respondido en directo por Azure AI · ${m} · solo con el registro del partido`,
+    feed:'Cronología', newest:'Lo más reciente primero', following:n=>`Siguiendo a ${n}`, none:n=>`Todavía no hay momentos de ${n}.`,
+    compare:'Comparar las tres voces', show:'Mostrar', hide:'Ocultar',
+    mom:'Dominio', momSub:'Presión por momento', att:c=>`${c} ataca`, shiftLbl:'Qué significa el cambio:',
+    even:(s,h)=>`Igualado en los últimos cuatro momentos (${s}): ${h} puntos de presión cada uno.`,
+    lead:(t,a,b,s)=>`${t} domina la presión ${a} a ${b} en los últimos cuatro momentos (${s}).`, to:'a',
+    stats:'Estadísticas', statsSub:'Contadas a partir de los eventos', st:['Goles','Grandes ocasiones en ataque','Paradas','Tarjetas','Índice de presión'],
+    pf:'Jugador en foco', pfSub:'Toca un jugador', pfIntro:'Sigue a un jugador todo el partido: una ficha según su posición, cada momento en el que participó y un resumen personal al final.',
+    th:['Jugador','Club','Goles','Momentos'], pfNow:(n,k)=>`${n}: ${k} momentos clave hasta ahora.`, pfClear:'La cronología sigue ahora a este jugador. Toca de nuevo para quitarlo.',
+    touches:'Toques', km:'Distancia (km)', mins:'Minutos', synth:'Datos de seguimiento sintéticos, al minuto.',
+    after:'Después del partido', afterSub:'Resumen final', decided:'Los momentos que lo decidieron', yourPlayer:n=>`Tu jugador: ${n}`,
+    comm:'¿Lo ves con amigos? La comunidad TSS proyecta cada jornada.', cta:'Únete en WhatsApp',
+    foot:'Demo con datos sintéticos. La competición, los clubes, el estadio y los jugadores son ficticios. Tash, Jay y Dave son personajes ficticios generados con IA. Las voces usan Azure AI Speech.',
+    written:(m,s)=>`Escrito en directo por Azure AI · ${m} · ${s} s`, writingSrc:'Escribiendo en directo con Azure AI', prepLine:'Frase preparada', prepFallback:'Frase preparada (IA en directo no disponible)',
+    why:'Por qué importa', how:'Cómo se escribió esta frase: cinco agentes', voiceOn:'Voz activada', voiceOff:'Voz desactivada',
+    pill:['SAQUE','EN VIVO','FINAL'], neutral:'Neutral', side:'Tu equipo',
+    modes:['Analista','Casual','Guasa'], kickers:['El análisis','La historia hasta ahora','Se oye en The Room'],
+    writing:['Tash lo está analizando','Jay está escribiendo','Dave está pensando una'], persona:'Personaje ficticio generado con IA',
+    tags:['Inicio','Ocasión','Gol','Cambio de ritmo','Parada','Revisión VAR','Anulado','Amarilla','Roja','Cambio','Penalti VAR','Final'],
+    hl:{ opening:'Los dos equipos se tantean', ahead:(p,t)=>`${p} adelanta a ${t}`, level:(p,s)=>`${p} empata: ${s}`, makes:(p,s)=>`${p} pone el ${s}`,
+      chance:(p,c)=>`${p} roza el gol para ${c}`, save:(p,c)=>`${p} sostiene a ${c}`, mom:t=>`${t} aprieta`, varc:p=>`El VAR revisa el gol de ${p}`,
+      varo:'Gol anulado. Sigue el empate.', yellow:p=>`${p}, amonestado`, red:(p,c)=>`${p}, expulsado. ${c} con diez.`, sub:(p,t)=>`Entra ${p}. ${t} abre el campo.`,
+      pen:p=>`Penalti reclamado sobre ${p}. No se concede.`, draw:s=>`Empate a ${s}`, comeback:t=>`${t} completa la remontada`, win:t=>`${t} se lleva la victoria` },
+    pos:['Portero','Lateral derecho','Central','Lateral izquierdo','Lateral','Pivote defensivo','Mediocentro','Mediapunta','Extremo derecho','Extremo izquierdo','Delantero centro','Delantero'],
+    sl:['Paradas','Goles encajados','Balones altos atrapados','Acierto en saques %','Entradas ganadas','Intercepciones','Despejes','Duelos ganados','Pases','Precisión de pase %','Pases clave','Centros','Centros completados','Regates ganados','Asistencias','Tiros','A puerta','Goles','Duelos aéreos ganados','Tarjetas']
+  },
+  fr: {
+    play:'Lecture', pause:'Pause', kick:'Coup d’envoi', next:'Moment suivant', again:'Revoir le match', facts:'Faits du match :',
+    live:'IA en direct', prep:'Préparé',
+    helpLive:'IA en direct : cinq agents dans Microsoft Foundry écrivent chaque phrase à partir du fil du match, en temps réel.',
+    helpPrep:'Préparé : les phrases vérifiées de l’équipe, écrites à l’avance en six langues.',
+    ask:w=>`Posez une question à ${w} sur le match`, askPh:'Pourquoi Northbridge domine ?', askBtn:'Demander', at:(w,m)=>`${w}, à la ${m} :`,
+    askFail:w=>`${w} ne peut pas répondre pour l’instant. Vérifiez votre connexion et réessayez.`, answered:m=>`Réponse en direct par Azure AI · ${m} · uniquement à partir du fil du match`,
+    feed:'Chronologie', newest:'Les plus récents d’abord', following:n=>`Suivi de ${n}`, none:n=>`Aucun moment pour ${n} pour l’instant.`,
+    compare:'Comparer les trois voix', show:'Afficher', hide:'Masquer',
+    mom:'Dynamique', momSub:'Pression par moment', att:c=>`${c} attaque`, shiftLbl:'Ce que montre la bascule :',
+    even:(s,h)=>`Équilibre sur les quatre derniers moments (${s}) : ${h} points de pression chacun.`,
+    lead:(t,a,b,s)=>`${t} mène la pression ${a} à ${b} sur les quatre derniers moments (${s}).`, to:'à',
+    stats:'Statistiques', statsSub:'Comptées à partir des événements', st:['Buts','Grosses occasions','Arrêts','Cartons','Indice de pression'],
+    pf:'Joueur suivi', pfSub:'Touchez un joueur', pfIntro:'Suivez un joueur pendant tout le match : une fiche adaptée à son poste, chaque moment auquel il a pris part et un bilan personnel au coup de sifflet final.',
+    th:['Joueur','Club','Buts','Moments'], pfNow:(n,k)=>`${n} : ${k} moments clés jusqu’ici.`, pfClear:'La chronologie suit maintenant ce joueur. Touchez à nouveau pour annuler.',
+    touches:'Ballons touchés', km:'Distance (km)', mins:'Minutes', synth:'Données de suivi synthétiques, à la minute.',
+    after:'L’Après', afterSub:'Bilan du match', decided:'Les moments décisifs', yourPlayer:n=>`Votre joueur : ${n}`,
+    comm:'Vous regardez entre amis ? La communauté TSS diffuse chaque journée.', cta:'Rejoindre sur WhatsApp',
+    foot:'Démo avec des données synthétiques. La compétition, les clubs, le stade et les joueurs sont fictifs. Tash, Jay et Dave sont des personnages fictifs générés par IA. Les voix utilisent Azure AI Speech.',
+    written:(m,s)=>`Écrit en direct par Azure AI · ${m} · ${s} s`, writingSrc:'Écriture en direct avec Azure AI', prepLine:'Phrase préparée', prepFallback:'Phrase préparée (IA en direct indisponible)',
+    why:'Pourquoi c’est important', how:'Comment cette phrase a été écrite : cinq agents', voiceOn:'Voix activée', voiceOff:'Voix coupée',
+    pill:['COUP D’ENVOI','EN DIRECT','TERMINÉ'], neutral:'Neutre', side:'Votre équipe',
+    modes:['Analyste','Décontracté','Chambreur'], kickers:['L’analyse','L’histoire du match','Entendu dans The Room'],
+    writing:['Tash analyse','Jay écrit','Dave en cherche une'], persona:'Personnage fictif généré par IA',
+    tags:['Coup d’envoi','Occasion','But','Bascule','Arrêt','Vérif. VAR','Refusé','Jaune','Rouge','Remplacement','Penalty ?','Fin'],
+    hl:{ opening:'Les deux équipes s’observent', ahead:(p,t)=>`${p} donne l’avantage à ${t}`, level:(p,s)=>`${p} égalise : ${s}`, makes:(p,s)=>`${p} fait ${s}`,
+      chance:(p,c)=>`${p} tout près pour ${c}`, save:(p,c)=>`${p} maintient ${c} en vie`, mom:t=>`${t} met la pression`, varc:p=>`La VAR examine le but de ${p}`,
+      varo:'But refusé. Toujours égalité.', yellow:p=>`${p} averti`, red:(p,c)=>`${p} expulsé. ${c} à dix.`, sub:(p,t)=>`${p} entre. ${t} joue large.`,
+      pen:p=>`Penalty réclamé sur ${p}. Refusé.`, draw:s=>`Égalité ${s}`, comeback:t=>`${t} renverse le match`, win:t=>`${t} s’impose` },
+    pos:['Gardien','Arrière droit','Défenseur central','Arrière gauche','Latéral','Milieu défensif','Milieu central','Milieu offensif','Ailier droit','Ailier gauche','Avant-centre','Attaquant'],
+    sl:['Arrêts','Buts encaissés','Ballons aériens captés','Relances réussies %','Tacles gagnés','Interceptions','Dégagements','Duels gagnés','Passes','Précision des passes %','Passes clés','Centres','Centres réussis','Dribbles réussis','Passes décisives','Tirs','Cadrés','Buts','Duels aériens gagnés','Cartons']
+  },
+  de: {
+    play:'Abspielen', pause:'Pause', kick:'Anstoß', next:'Nächster Moment', again:'Spiel wiederholen', facts:'Spielfakten:',
+    live:'Live-KI', prep:'Vorbereitet',
+    helpLive:'Live-KI: Fünf Agenten in Microsoft Foundry schreiben jede Zeile in Echtzeit aus dem Spielverlauf.',
+    helpPrep:'Vorbereitet: geprüfte Zeilen des Teams, vorab in sechs Sprachen geschrieben.',
+    ask:w=>`Frag ${w} zum Spiel`, askPh:'Warum ist Northbridge überlegen?', askBtn:'Fragen', at:(w,m)=>`${w}, ${m}:`,
+    askFail:w=>`${w} kann gerade nicht antworten. Prüfe deine Verbindung und frag noch einmal.`, answered:m=>`Live beantwortet von Azure AI · ${m} · nur aus dem Spielverlauf`,
+    feed:'Spielverlauf', newest:'Neueste zuerst', following:n=>`Fokus auf ${n}`, none:n=>`Noch keine Momente für ${n}.`,
+    compare:'Alle drei Stimmen vergleichen', show:'Zeigen', hide:'Ausblenden',
+    mom:'Momentum', momSub:'Druck pro Moment', att:c=>`${c} greift an`, shiftLbl:'Was die Verschiebung bedeutet:',
+    even:(s,h)=>`Ausgeglichen in den letzten vier Momenten (${s}): je ${h} Druckpunkte.`,
+    lead:(t,a,b,s)=>`${t} führt beim Druck mit ${a} zu ${b} in den letzten vier Momenten (${s}).`, to:'bis',
+    stats:'Spielstatistik', statsSub:'Aus den Ereignissen gezählt', st:['Tore','Große Momente im Angriff','Paraden','Karten','Druckindex'],
+    pf:'Spieler im Fokus', pfSub:'Spieler antippen', pfIntro:'Begleite einen Spieler durchs ganze Spiel: eine Statistikkarte für seine Position, jeder Moment, an dem er beteiligt war, und ein persönliches Fazit nach Abpfiff.',
+    th:['Spieler','Verein','Tore','Momente'], pfNow:(n,k)=>`${n}: bisher ${k} Schlüsselmomente.`, pfClear:'Der Spielverlauf folgt jetzt diesem Spieler. Erneut antippen zum Aufheben.',
+    touches:'Ballkontakte', km:'Laufleistung (km)', mins:'Minuten', synth:'Synthetische Tracking-Daten, minutengenau.',
+    after:'Danach', afterSub:'Fazit nach Abpfiff', decided:'Die entscheidenden Momente', yourPlayer:n=>`Dein Spieler: ${n}`,
+    comm:'Schaust du mit Freunden? Die TSS-Community zeigt jeden Spieltag.', cta:'Auf WhatsApp beitreten',
+    foot:'Demo mit synthetischen Daten. Wettbewerb, Vereine, Stadion und Spieler sind fiktiv. Tash, Jay und Dave sind fiktive, KI-generierte Personas. Die Stimmen nutzen Azure AI Speech.',
+    written:(m,s)=>`Live geschrieben von Azure AI · ${m} · ${s} s`, writingSrc:'Wird live mit Azure AI geschrieben', prepLine:'Vorbereitete Zeile', prepFallback:'Vorbereitete Zeile (Live-KI nicht verfügbar)',
+    why:'Warum es zählt', how:'So entstand diese Zeile: fünf Agenten', voiceOn:'Stimme an', voiceOff:'Stimme aus',
+    pill:['ANSTOSS','LIVE','ABPFIFF'], neutral:'Neutral', side:'Dein Team',
+    modes:['Analystin','Locker','Sprüche'], kickers:['Die Analyse','Die Geschichte bisher','Gehört in The Room'],
+    writing:['Tash rechnet nach','Jay tippt','Dave überlegt sich einen'], persona:'Fiktive, KI-generierte Persona',
+    tags:['Anstoß','Chance','Tor','Wende','Parade','VAR-Check','Aberkannt','Gelb','Rot','Wechsel','Elfer-Check','Ende'],
+    hl:{ opening:'Beide Teams tasten sich ab', ahead:(p,t)=>`${p} bringt ${t} in Führung`, level:(p,s)=>`${p} gleicht aus: ${s}`, makes:(p,s)=>`${p} stellt auf ${s}`,
+      chance:(p,c)=>`${p} knapp vorbei für ${c}`, save:(p,c)=>`${p} hält ${c} im Spiel`, mom:t=>`${t} macht Druck`, varc:p=>`Der VAR prüft das Tor von ${p}`,
+      varo:'Tor aberkannt. Weiter unentschieden.', yellow:p=>`Gelb für ${p}`, red:(p,c)=>`Platzverweis für ${p}. ${c} nur noch zu zehnt.`, sub:(p,t)=>`${p} kommt. ${t} spielt breiter.`,
+      pen:p=>`Elfmeterforderung für ${p}. Kein Strafstoß.`, draw:s=>`Unentschieden ${s}`, comeback:t=>`${t} dreht das Spiel`, win:t=>`${t} gewinnt` },
+    pos:['Torwart','Rechtsverteidiger','Innenverteidiger','Linksverteidiger','Außenverteidiger','Defensiver Mittelfeldspieler','Zentraler Mittelfeldspieler','Offensiver Mittelfeldspieler','Rechtsaußen','Linksaußen','Mittelstürmer','Stürmer'],
+    sl:['Paraden','Gegentore','Hohe Bälle gefangen','Spieleröffnung %','Gewonnene Tacklings','Ballgewinne','Klärungen','Gewonnene Zweikämpfe','Pässe','Passquote %','Schlüsselpässe','Flanken','Angekommene Flanken','Gewonnene Dribblings','Vorlagen','Schüsse','Aufs Tor','Tore','Gewonnene Kopfballduelle','Karten']
+  },
+  pt: {
+    play:'Reproduzir', pause:'Pausa', kick:'Pontapé de saída', next:'Momento seguinte', again:'Rever o jogo', facts:'Factos do jogo:',
+    live:'IA em direto', prep:'Preparado',
+    helpLive:'IA em direto: cinco agentes no Microsoft Foundry escrevem cada frase a partir do registo do jogo, no momento.',
+    helpPrep:'Preparado: frases revistas pela equipa, escritas antecipadamente em seis línguas.',
+    ask:w=>`Pergunte a ${w} sobre o jogo`, askPh:'Porque é que o Northbridge domina?', askBtn:'Perguntar', at:(w,m)=>`${w}, aos ${m}:`,
+    askFail:w=>`${w} não consegue responder agora. Verifique a ligação e pergunte de novo.`, answered:m=>`Respondido em direto pela Azure AI · ${m} · só com o registo do jogo`,
+    feed:'Cronologia', newest:'Mais recentes primeiro', following:n=>`A seguir ${n}`, none:n=>`Ainda sem momentos de ${n}.`,
+    compare:'Comparar as três vozes', show:'Mostrar', hide:'Ocultar',
+    mom:'Ascendente', momSub:'Pressão por momento', att:c=>`${c} ao ataque`, shiftLbl:'O que significa a mudança:',
+    even:(s,h)=>`Equilíbrio nos últimos quatro momentos (${s}): ${h} pontos de pressão cada.`,
+    lead:(t,a,b,s)=>`${t} lidera a pressão por ${a} a ${b} nos últimos quatro momentos (${s}).`, to:'a',
+    stats:'Estatísticas', statsSub:'Contadas a partir dos eventos', st:['Golos','Grandes momentos no ataque','Defesas','Cartões','Índice de pressão'],
+    pf:'Jogador em foco', pfSub:'Toque num jogador', pfIntro:'Siga um jogador durante todo o jogo: uma ficha de acordo com a posição, cada momento em que participou e um resumo pessoal no fim.',
+    th:['Jogador','Clube','Golos','Momentos'], pfNow:(n,k)=>`${n}: ${k} momentos-chave até agora.`, pfClear:'A cronologia segue agora este jogador. Toque de novo para limpar.',
+    touches:'Toques', km:'Distância (km)', mins:'Minutos', synth:'Dados de tracking sintéticos, ao minuto.',
+    after:'O Depois', afterSub:'Resumo final', decided:'Os momentos que decidiram', yourPlayer:n=>`O seu jogador: ${n}`,
+    comm:'A ver com amigos? A comunidade TSS projeta cada jornada.', cta:'Junte-se no WhatsApp',
+    foot:'Demo com dados sintéticos. A competição, os clubes, o estádio e os jogadores são fictícios. Tash, Jay e Dave são personagens fictícias geradas por IA. As vozes usam Azure AI Speech.',
+    written:(m,s)=>`Escrito em direto pela Azure AI · ${m} · ${s} s`, writingSrc:'A escrever em direto com Azure AI', prepLine:'Frase preparada', prepFallback:'Frase preparada (IA em direto indisponível)',
+    why:'Porque importa', how:'Como esta frase foi escrita: cinco agentes', voiceOn:'Voz ligada', voiceOff:'Voz desligada',
+    pill:['INÍCIO','EM DIRETO','FINAL'], neutral:'Neutro', side:'A sua equipa',
+    modes:['Analista','Descontraído','Gozão'], kickers:['A análise','A história até agora','Ouvido no The Room'],
+    writing:['A Tash está a analisar','O Jay está a escrever','O Dave está a pensar numa'], persona:'Personagem fictícia gerada por IA',
+    tags:['Início','Ocasião','Golo','Viragem','Defesa','Revisão VAR','Anulado','Amarelo','Vermelho','Substituição','Penálti?','Final'],
+    hl:{ opening:'As duas equipas estudam-se', ahead:(p,t)=>`${p} põe o ${t} na frente`, level:(p,s)=>`${p} empata: ${s}`, makes:(p,s)=>`${p} faz ${s}`,
+      chance:(p,c)=>`${p} perto do golo pelo ${c}`, save:(p,c)=>`${p} mantém o ${c} vivo`, mom:t=>`O ${t} aperta`, varc:p=>`O VAR analisa o golo de ${p}`,
+      varo:'Golo anulado. Continua empatado.', yellow:p=>`Amarelo para ${p}`, red:(p,c)=>`${p} expulso. ${c} com dez.`, sub:(p,t)=>`Entra ${p}. O ${t} abre o jogo.`,
+      pen:p=>`Pedido de penálti sobre ${p}. Nada assinalado.`, draw:s=>`Empate a ${s}`, comeback:t=>`O ${t} completa a reviravolta`, win:t=>`O ${t} vence` },
+    pos:['Guarda-redes','Lateral direito','Defesa central','Lateral esquerdo','Lateral','Médio defensivo','Médio centro','Médio ofensivo','Extremo direito','Extremo esquerdo','Ponta de lança','Avançado'],
+    sl:['Defesas','Golos sofridos','Bolas altas agarradas','Distribuição %','Desarmes','Interceções','Alívios','Duelos ganhos','Passes','Precisão de passe %','Passes-chave','Cruzamentos','Cruzamentos certos','Dribles ganhos','Assistências','Remates','À baliza','Golos','Duelos aéreos ganhos','Cartões']
+  },
+  ar: {
+    play:'تشغيل', pause:'إيقاف مؤقت', kick:'ضربة البداية', next:'اللحظة التالية', again:'إعادة المباراة', facts:'وقائع المباراة:',
+    live:'ذكاء اصطناعي مباشر', prep:'محضّر',
+    helpLive:'الذكاء الاصطناعي المباشر: خمسة وكلاء في Microsoft Foundry يكتبون كل سطر من سجل المباراة لحظة بلحظة.',
+    helpPrep:'المحضّر: أسطر راجعها الفريق وكُتبت مسبقًا بست لغات.',
+    ask:w=>`اسأل ${w} عن المباراة`, askPh:'لماذا يتفوق Northbridge؟', askBtn:'اسأل', at:(w,m)=>`${w}، في الدقيقة ${m}:`,
+    askFail:w=>`لا يستطيع ${w} الإجابة الآن. تحقق من الاتصال واسأل مجددًا.`, answered:m=>`أجاب Azure AI مباشرة · ${m} · من سجل المباراة فقط`,
+    feed:'التسلسل الزمني', newest:'الأحدث أولًا', following:n=>`متابعة ${n}`, none:n=>`لا توجد لحظات لـ ${n} بعد.`,
+    compare:'قارن الأصوات الثلاثة', show:'إظهار', hide:'إخفاء',
+    mom:'الزخم', momSub:'الضغط في كل لحظة', att:c=>`${c} يهاجم`, shiftLbl:'ماذا يعني التحول:',
+    even:(s,h)=>`تعادل في آخر أربع لحظات (${s}): ${h} نقاط ضغط لكل فريق.`,
+    lead:(t,a,b,s)=>`${t} يتفوق في الضغط ${a} مقابل ${b} في آخر أربع لحظات (${s}).`, to:'إلى',
+    stats:'إحصاءات المباراة', statsSub:'محسوبة من الأحداث', st:['الأهداف','اللحظات الكبيرة في الهجوم','تصديات الحارس','البطاقات','مؤشر الضغط'],
+    pf:'لاعب في التركيز', pfSub:'اضغط على لاعب', pfIntro:'تابع لاعبًا واحدًا طوال المباراة: بطاقة إحصاءات حسب مركزه، وكل لحظة شارك فيها، وملخص شخصي عند النهاية.',
+    th:['اللاعب','النادي','الأهداف','اللحظات'], pfNow:(n,k)=>`${n}: ${k} لحظات رئيسية حتى الآن.`, pfClear:'التسلسل الزمني يتابع هذا اللاعب الآن. اضغط مجددًا للإلغاء.',
+    touches:'لمسات', km:'المسافة (كم)', mins:'الدقائق', synth:'بيانات تتبع اصطناعية، محدّثة بالدقيقة.',
+    after:'ما بعد المباراة', afterSub:'ملخص نهاية المباراة', decided:'اللحظات الحاسمة', yourPlayer:n=>`لاعبك: ${n}`,
+    comm:'تشاهد مع أصدقائك؟ مجتمع TSS يعرض كل جولة.', cta:'انضم عبر WhatsApp',
+    foot:'عرض تجريبي ببيانات اصطناعية. البطولة والأندية والملعب واللاعبون كلها خيالية. Tash وJay وDave شخصيات خيالية مولّدة بالذكاء الاصطناعي. الأصوات من Azure AI Speech.',
+    written:(m,s)=>`كُتب مباشرة بواسطة Azure AI · ${m} · ${s} ث`, writingSrc:'يُكتب مباشرة بواسطة Azure AI', prepLine:'سطر محضّر', prepFallback:'سطر محضّر (الذكاء الاصطناعي المباشر غير متاح)',
+    why:'لماذا يهم', how:'كيف كُتب هذا السطر: خمسة وكلاء', voiceOn:'الصوت يعمل', voiceOff:'الصوت متوقف',
+    pill:['البداية','مباشر','نهاية المباراة'], neutral:'محايد', side:'فريقك',
+    modes:['محللة','عفوي','مازح'], kickers:['التحليل','القصة حتى الآن','سُمع في The Room'],
+    writing:['Tash تحلل','Jay يكتب','Dave يفكر في نكتة'], persona:'شخصية خيالية مولّدة بالذكاء الاصطناعي',
+    tags:['البداية','فرصة','هدف','تحوّل','تصدٍّ','مراجعة VAR','إلغاء','صفراء','حمراء','تبديل','ركلة جزاء؟','النهاية'],
+    hl:{ opening:'الفريقان يجسّان النبض', ahead:(p,t)=>`${p} يمنح ${t} التقدم`, level:(p,s)=>`${p} يعادل النتيجة ${s}`, makes:(p,s)=>`${p} يجعلها ${s}`,
+      chance:(p,c)=>`${p} يقترب من التسجيل لـ ${c}`, save:(p,c)=>`${p} يُبقي ${c} في المباراة`, mom:t=>`${t} يضغط بقوة`, varc:p=>`حكم الفيديو يراجع هدف ${p}`,
+      varo:'إلغاء الهدف. التعادل مستمر.', yellow:p=>`بطاقة صفراء لـ ${p}`, red:(p,c)=>`طرد ${p}. ${c} بعشرة لاعبين.`, sub:(p,t)=>`دخول ${p}. ${t} يوسّع اللعب.`,
+      pen:p=>`مطالبة بركلة جزاء لـ ${p}. لا شيء.`, draw:s=>`تعادل ${s}`, comeback:t=>`${t} يكمل العودة`, win:t=>`${t} يفوز` },
+    pos:['حارس مرمى','ظهير أيمن','قلب دفاع','ظهير أيسر','ظهير','وسط دفاعي','لاعب وسط','وسط مهاجم','جناح أيمن','جناح أيسر','رأس حربة','مهاجم'],
+    sl:['تصديات','أهداف مستقبلة','كرات عالية ممسوكة','دقة التوزيع %','تدخلات ناجحة','اعتراضات','تشتيتات','صراعات مكسوبة','تمريرات','دقة التمرير %','تمريرات مفتاحية','عرضيات','عرضيات ناجحة','مراوغات ناجحة','تمريرات حاسمة','تسديدات','على المرمى','أهداف','صراعات هوائية مكسوبة','البطاقات']
+  }
+};
+const TAGCLS = zip(TK, ['', '', 'goal', '', '', 'var', 'var', 'card', 'red', '', 'var', 'ft']);
+const u = () => UI[S.lang];
+const pi = who => Object.keys(P).indexOf(who);
+const tag = t => [u().tags[TK.indexOf(t)], TAGCLS[t]];
+const posName = p => u().pos[POS.indexOf(p)] || p;
+const statName = k => u().sl[SK.indexOf(k)] || k;
+
+const H = M.home_team, A = M.away_team;
+const code = t => t === H ? 'NBR' : 'KSU';
+const other = t => t === H ? A : H;
+const minLabel = m => m === 'FT' ? 'FT' : (m.includes('+') ? m + "'" : parseInt(m, 10) + "'");
+const minNum = m => m === 'FT' ? 96 : m.includes('+') ? m.split('+').reduce((a, b) => +a + +b, 0) : parseInt(m, 10);
+const surname = p => p.split(' ')[1];
+const fact = e => (DATA.facts_i18n[S.lang] || {})[e.event_id] || e.facts;
+const factAttr = () => `lang="${S.lang}" dir="${S.lang === 'ar' ? 'rtl' : 'ltr'}"`;
+const L = {};
+NR.forEach(n => { ((L[n.event_id] ||= {})[n.character] ||= {})[n.language_code] = n.commentary; });
+
+// Pressure each moment puts on the opposition, for the momentum chart. Who attacked, not who the event is about.
+const W = { GOAL:3, CHANCE:2, MOMENTUM:2, PENALTY_CHECK:2, VAR_CHECK:2, VAR_OVERTURN:1, SUBSTITUTION:1 };
+function pressure(e) {
+  if (!e.event_team) return [0, 0];
+  let team = e.event_team, w = W[e.event_type] || 0;
+  if (e.event_type === 'SAVE') { team = other(team); w = 2; }
+  if (e.event_type === 'YELLOW_CARD' || e.event_type === 'RED_CARD') { team = other(team); w = 1; }
+  return team === H ? [w, 0] : [0, w];
+}
+const PR = EV.map(pressure);
+const CLUB = { none: null, home: H, away: A };
+
+const S = { i: 0, voice: 'Tash', lang: 'en', club: 'none', playing: false, speed: 1, player: null, shown: 0, cmp: false, speak: false };
+try {
+  const v = localStorage.getItem('room.voice'); if (P[v]) S.voice = v;
+  const l = localStorage.getItem('room.lang'); if (LANGS[l]) S.lang = l;
+  const c = localStorage.getItem('room.club'); if (c in CLUB) S.club = c;
+} catch (e) {}
+const $ = id => document.getElementById(id);
+const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const prepared = (eid, who) => (L[eid] && L[eid][who] && (L[eid][who][S.lang] || L[eid][who].en)) || '';
+
+// Live AI: /api/commentary runs the five agents (Azure Functions -> Microsoft Foundry) for one moment, voice, language and side.
+S.live = true;
+const AI = {}, pending = new Set();
+const akey = (i, who) => `${i}|${who}|${S.lang}|${S.club}`;
+function want(i, who) {
+  const k = akey(i, who);
+  if (!S.live || AI[k] || pending.has(k)) return;
+  pending.add(k);
+  const [, , lang, club] = k.split('|');
+  const t0 = performance.now(), ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 15000);
+  fetch('/api/commentary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index: i, character: who, lang, club }), signal: ctl.signal })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(j => { AI[k] = { text: j.line, live: true, model: j.model, why: j.why, trace: j.trace, sig: j.sig, ms: j.cached ? Math.round(performance.now() - t0) : j.total_ms }; })
+    .catch(() => { AI[k] = { text: prepared(EV[i].event_id, who), live: false }; })
+    .finally(() => { clearTimeout(to); pending.delete(k); render(); });
+}
+// Text for a moment: live line when Live AI is on (null while it is being written), the prepared line otherwise.
+function lineAt(i, who) {
+  if (!S.live) return prepared(EV[i].event_id, who);
+  const a = AI[akey(i, who)];
+  if (a) return a.text;
+  want(i, who);
+  return null;
+}
+// Timeline: a line already written live if there is one, without asking for more.
+const line = (idx, who) => { const a = S.live && AI[akey(idx, who)]; return a ? a.text : prepared(EV[idx].event_id, who); };
+const writing = who => u().writing[pi(who)];
+const av = (who, lg) => `<img class="av${lg ? ' lg' : ''} is-${P[who].key}" src="faces/${P[who].key}.png" alt="" title="${esc(u().persona)}">`;
+
+// Spoken voices: Azure AI Speech through /api/speak. One audio element, unlocked by the Voice button.
+const aud = new Audio(); let spokenKey = '', audUrl = '';
+function say(text, who, sig, key) {
+  if (!S.speak || !text || key === spokenKey) return;
+  spokenKey = key;
+  fetch('/api/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, character: who, lang: S.lang, sig, prepared: !sig }) })
+    .then(r => r.ok ? r.blob() : Promise.reject(r.status))
+    .then(b => { if (spokenKey !== key) return; if (audUrl) URL.revokeObjectURL(audUrl); audUrl = URL.createObjectURL(b); aud.src = audUrl; return aud.play(); })
+    .catch(() => {});
+}
+const talking = () => S.speak && !aud.paused && !aud.ended;
+
+function build() {
+  $('hname').textContent = H; $('aname').textContent = A;
+  $('hcode').textContent = 'NBR'; $('acode').textContent = 'KSU';
+  $('langs').innerHTML = Object.entries(LANGS).map(([k, v]) => `<button data-l="${k}" aria-pressed="${k === S.lang}">${v}</button>`).join('');
+  $('langs').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.lang = b.dataset.l; clearAsk(); try { localStorage.setItem('room.lang', S.lang); } catch (x) {} render(true); };
+  $('club').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.club = b.dataset.c; try { localStorage.setItem('room.club', S.club); } catch (x) {} render(true); };
+  $('vtabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.voice = b.dataset.v; clearAsk(); try { localStorage.setItem('room.voice', S.voice); } catch (x) {} render(true); };
+  $('speed').innerHTML = [1, 2, 4].map(s => `<button data-s="${s}" aria-pressed="${s === S.speed}">${s}x</button>`).join('');
+  $('speed').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.speed = +b.dataset.s; [...$('speed').children].forEach(c => c.setAttribute('aria-pressed', c === b)); if (S.playing) { stop(); start(); } };
+  $('scrub').oninput = e => { go(+e.target.value); };
+  $('play').onclick = () => { if (S.i >= EV.length - 1 && !S.playing) { go(0); start(); return; } S.playing ? stop() : start(); };
+  $('step').onclick = () => { stop(); go(Math.min(S.i + 1, EV.length - 1)); };
+  $('mode').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.live = b.dataset.m === 'live'; render(true); };
+  $('cmpBtn').onclick = () => { S.cmp = !S.cmp; render(); };
+  $('voiceBtn').onclick = () => {
+    S.speak = !S.speak; spokenKey = '';
+    if (S.speak) { aud.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='; aud.play().catch(() => {}); } else aud.pause();
+    render();
+  };
+  $('askForm').onsubmit = ev => {
+    ev.preventDefault();
+    const q = $('askQ').value.trim(), who = S.voice, out = $('askOut');
+    if (!q) { $('askQ').focus(); return; }
+    out.hidden = false; out.className = 'answer is-' + P[who].key; out.textContent = writing(who) + '…';
+    $('askBtn').disabled = true;
+    const at = S.i, lang = S.lang;
+    fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ index: at, character: who, lang, club: S.club, question: q }) })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(j => {
+        if (who !== S.voice || lang !== S.lang) return;
+        out.innerHTML = `<strong>${esc(u().at(who, minLabel(EV[at].minute)))}</strong> ${esc(j.answer)}<div class="src" dir="ltr">${esc(u().answered(j.model))}</div>`;
+        say(j.answer, who, j.sig, 'ask|' + j.sig);
+      })
+      .catch(() => { out.textContent = u().askFail(who); })
+      .finally(() => { $('askBtn').disabled = false; });
+  };
+  const rows = [];
+  [H, A].forEach(t => DATA.players[t].forEach(p => rows.push({ p, t, n: mine(p, EV.length - 1).length })));
+  rows.sort((a, b) => b.n - a.n);
+  S.prow = rows;
+  $('players').onclick = ev => { const tr = ev.target.closest('tr[data-p]'); if (!tr) return; S.player = S.player === tr.dataset.p ? null : tr.dataset.p; render(); };
+  $('players').onkeydown = ev => { if (ev.key === 'Enter') ev.target.click(); };
+}
+function clearAsk() { $('askOut').hidden = true; $('askOut').textContent = ''; $('askQ').value = ''; }
+
+let timer = null;
+function start() { S.playing = true; tick(); }
+function stop() { S.playing = false; clearTimeout(timer); render(); }
+function tick() {
+  clearTimeout(timer);
+  render();
+  if (!S.playing) return;
+  if (S.i >= EV.length - 1) { S.playing = false; render(); return; }
+  // with the voice on, a moment waits for its line to finish before the next one starts
+  const next = () => { if (!S.playing) return; if (talking()) { timer = setTimeout(next, 300); return; } go(S.i + 1, true); tick(); };
+  timer = setTimeout(next, 4200 / S.speed);
+}
+function go(i, fromTick) {
+  const prev = S.i; S.i = i;
+  if (EV[i].event_type === 'GOAL' && i === prev + 1) flash();
+  if (!fromTick) render();
+}
+function flash() {
+  if (reduced()) return;
+  const s = $('scoreline'); s.classList.add('flash'); setTimeout(() => s.classList.remove('flash'), 600);
+}
+function scorers(team, upto) {
+  return EV.slice(0, upto + 1).filter(e => e.event_type === 'GOAL' && e.event_team === team)
+    .map(e => `${surname(e.player)} ${minLabel(e.minute)}`).join(' · ');
+}
+
+// Player focus: every moment a player is part of, and a stat card for his position.
+const mine = (p, upto) => EV.slice(0, upto + 1).filter(x => x.player === p || x.facts.includes(surname(p)));
+function card(p, upto) {
+  const s = ST.players[p], team = DATA.players[H].includes(p) ? H : A, m = minNum(EV[upto].minute);
+  const played = Math.max(0, Math.min(m, s.off) - s.on), f = played / (s.off - s.on);
+  const ev = EV.slice(0, upto + 1);
+  const goals = ev.filter(x => x.event_type === 'GOAL' && x.player === p).length;
+  const assists = ev.filter(x => x.event_type === 'GOAL' && x.player !== p && x.facts.includes(surname(p))).length;
+  const shotEv = ev.filter(x => (['GOAL', 'CHANCE', 'VAR_CHECK'].includes(x.event_type) && x.player === p) || (x.event_type === 'SAVE' && x.facts.includes('from ' + p))).length;
+  const onEv = ev.filter(x => (x.event_type === 'GOAL' && x.player === p) || (x.event_type === 'SAVE' && x.facts.includes('from ' + p))).length;
+  const pro = k => Math.round((s[k] || 0) * f);
+  const val = {
+    saves: ev.filter(x => x.event_type === 'SAVE' && x.player === p).length,
+    conceded: ev.filter(x => x.event_type === 'GOAL' && x.event_team === other(team)).length,
+    goals, assists, shots: Math.max(pro('shots'), shotEv), on_target: Math.max(pro('on_target'), onEv),
+    cards: ev.filter(x => /CARD/.test(x.event_type) && x.player === p).length,
+    pass_pct: s.pass_pct, distribution: s.distribution, crosses_done: Math.max(pro('crosses_done'), assists)
+  };
+  const get = k => k in val ? val[k] : pro(k);
+  const keys = ST.groups[s.group].map(g => g[0]);
+  const extra = [s.group === 'FWD' ? 'assists' : (keys.includes('goals') ? 'assists' : 'goals'), 'cards'].filter(k => !keys.includes(k));
+  const cells = [['mins', played], ['touches', pro('touches')], ['km', (s.km * f).toFixed(1)], ...keys.map(k => [k, get(k)]), ...extra.map(k => [k, get(k)])];
+  return { team, pos: s.pos, played, cells, json: Object.fromEntries(cells.map(([k, v]) => [k, v])) };
+}
+const PREC = {};
+function playerRecap(p) {
+  const k = `${p}|${S.voice}|${S.lang}`;
+  if (PREC[k] !== undefined) return PREC[k];
+  if (!S.live) return null;
+  PREC[k] = null;
+  fetch('/api/player', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ player: p, character: S.voice, lang: S.lang, stats: card(p, EV.length - 1).json }) })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(j => { PREC[k] = { text: j.recap, sig: j.sig }; })
+    .catch(() => { PREC[k] = false; })
+    .finally(render);
+  return null;
+}
+
+function render(fade) {
+  const e = EV[S.i], who = S.voice, x = u(), k = pi(who);
+  const rtl = S.lang === 'ar';
+  document.documentElement.lang = S.lang;
+  document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+  [...$('langs').children].forEach(b => b.setAttribute('aria-pressed', b.dataset.l === S.lang));
+  $('vtabs').innerHTML = Object.keys(P).map((n, j) => `<button class="vtab is-${P[n].key}" data-v="${n}" aria-pressed="${n === who}">${av(n)}<span>${n}<small>${x.modes[j]}</small></span></button>`).join('');
+  $('club').setAttribute('aria-label', x.side);
+  $('club').innerHTML = [['none', x.neutral], ['home', 'NBR'], ['away', 'KSU']].map(([c, l]) => `<button data-c="${c}" aria-pressed="${c === S.club}">${esc(l)}</button>`).join('');
+  const ft = e.event_type === 'FULL_TIME';
+  $('live').textContent = ft ? x.pill[2] : (S.i === 0 && !S.playing && S.shown === 0 ? x.pill[0] : x.pill[1] + ' ' + minLabel(e.minute));
+  $('live').classList.toggle('ft', ft);
+  $('scoreline').textContent = `${e.home_score} – ${e.away_score}`;
+  $('scoreline').dir = 'ltr';
+  $('hsc').textContent = scorers(H, S.i); $('asc').textContent = scorers(A, S.i);
+
+  // chrome
+  $('factsLbl').textContent = x.facts; $('modeLive').textContent = x.live; $('modePrep').textContent = x.prep;
+  $('modeHelp').textContent = S.live ? x.helpLive : x.helpPrep;
+  $('askLbl').textContent = x.ask(who); $('askQ').placeholder = x.askPh; $('askBtn').textContent = x.askBtn;
+  $('afterLbl').textContent = x.after; $('afterSub').textContent = x.afterSub; $('decidedLbl').textContent = x.decided;
+  $('feedLbl').textContent = x.feed; $('threeLbl').textContent = x.compare; $('cmpBtn').textContent = S.cmp ? x.hide : x.show; $('cmpBtn').setAttribute('aria-pressed', S.cmp);
+  $('momLbl').textContent = x.mom; $('momSub').textContent = x.momSub; $('lgH').textContent = '▲ ' + x.att('NBR'); $('lgA').textContent = '▼ ' + x.att('KSU'); $('shiftLbl').textContent = x.shiftLbl;
+  $('statsLbl').textContent = x.stats; $('statsSub').textContent = x.statsSub; $('pfLbl').textContent = x.pf; $('pfSub').textContent = x.pfSub;
+  ['commKick', 'commAfter', 'commSide'].forEach(id => { const a = $(id); a.href = DATA.community; a.querySelector('.ctext').textContent = x.comm; a.querySelector('.ccta').textContent = x.cta + (rtl ? ' ←' : ' →'); });
+  $('commKick').hidden = S.i > 1; $('foot').textContent = x.foot;
+  $('voiceBtn').textContent = (S.speak ? '◼ ' : '▶ ') + (S.speak ? x.voiceOn : x.voiceOff); $('voiceBtn').setAttribute('aria-pressed', S.speak);
+
+  // insight
+  $('insightSec').className = 'insight is-' + P[who].key;
+  $('kicker').textContent = x.kickers[k];
+  $('headline').textContent = headline(e);
+  $('say').className = 'say is-' + P[who].key;
+  $('sayAv').outerHTML = av(who, true).replace('<img ', '<img id="sayAv" ');
+  $('sayMin').textContent = minLabel(e.minute);
+  $('sayWho').textContent = `${who} · ${x.modes[k]}`;
+  const sl = $('sayLine');
+  // read the line at paint time, so a fade never paints a line that has since been replaced
+  const put = () => {
+    const txt = lineAt(S.i, S.voice), a = S.live && AI[akey(S.i, S.voice)], y = u();
+    sl.textContent = txt === null ? writing(S.voice) + '…' : txt; sl.classList.toggle('writing', txt === null);
+    $('saySrc').textContent = !S.live ? y.prepLine : (txt === null ? y.writingSrc : (a && a.live ? y.written(a.model, (a.ms / 1000).toFixed(1)) : y.prepFallback));
+    const live = a && a.live;
+    $('why').hidden = !live; if (live) $('why').innerHTML = `<b>${esc(y.why)}</b>${esc(a.why || '')}`;
+    $('howmade').hidden = !(live && a.trace);
+    if (live && a.trace) { $('howLbl').textContent = y.how; $('trace').innerHTML = a.trace.map(t => `<li><span class="ag">${esc(t.agent)}</span>${t.ms ? ` <span class="num">${(t.ms / 1000).toFixed(1)}s</span>` : ''} · ${esc(t.note || '')}</li>`).join(''); }
+    if (txt !== null) say(txt, S.voice, a && a.live ? a.sig : null, `${akey(S.i, S.voice)}|${S.live}`);
+  };
+  if (fade && !reduced()) { sl.style.opacity = 0; setTimeout(() => { put(); sl.style.opacity = 1; }, 150); } else put();
+  [...$('mode').children].forEach(b => b.setAttribute('aria-pressed', (b.dataset.m === 'live') === S.live));
+  if (S.live && S.playing && S.i + 1 < EV.length) want(S.i + 1, who);
+  $('facts').textContent = fact(e); $('facts').lang = S.lang; $('facts').dir = rtl ? 'rtl' : 'ltr';
+
+  // controls
+  $('play').textContent = S.playing ? x.pause : (S.i >= EV.length - 1 ? x.again : (S.i === 0 && S.shown === 0 ? x.kick : x.play));
+  $('step').textContent = x.next;
+  $('scrub').value = S.i; $('pos').textContent = `${S.i + 1}/${EV.length}`;
+
+  // compare all three: only when asked for
+  const fans = idx => Object.keys(P).map((n, j) => `<div class="fan is-${P[n].key}">${av(n, true)}<div><div style="display:flex;gap:8px;align-items:baseline"><span class="nm">${n}</span><span class="md">${x.modes[j]}</span></div>${(t => t === null ? `<p class="writing">${writing(n)}…</p>` : `<p>${esc(t)}</p>`)(lineAt(idx, n))}</div></div>`).join('');
+  $('threeBody').hidden = !S.cmp;
+  if (S.cmp) { $('threeMin').textContent = minLabel(e.minute) + ' · ' + tag(e.event_type)[0]; $('three').innerHTML = fans(S.i); }
+
+  // feed (newest first), optionally filtered by player focus
+  let list = EV.slice(0, S.i + 1).map((ev, idx) => ({ ev, idx })).reverse();
+  if (S.player) { const sn = surname(S.player); list = list.filter(({ ev }) => ev.player === S.player || ev.facts.includes(sn)); }
+  $('feedNote').textContent = S.player ? x.following(S.player) : x.newest;
+  $('feed').innerHTML = list.length ? list.map(({ ev, idx }) => {
+    const t = tag(ev.event_type);
+    const tm = ev.event_team ? ` · ${code(ev.event_team)}` : '';
+    return `<li class="is-${P[who].key}${idx === S.i && S.shown !== S.i ? ' new' : ''}"><span class="m" dir="ltr">${minLabel(ev.minute)}</span><div><div class="hd"><span class="tag ${t[1]}">${esc(t[0])}</span><span>${esc(ev.player || '')}${tm}</span><span class="num" style="color:var(--ink-muted);font-weight:500" dir="ltr">${ev.home_score}–${ev.away_score}</span></div><p class="q">${esc(line(idx, who))}</p></div></li>`;
+  }).join('') : `<li><span class="empty">${esc(x.none(S.player))}</span></li>`;
+  S.shown = S.i;
+
+  // momentum
+  const mx = 3;
+  $('mom').innerHTML = PR.map(([h, a], j) => `<div class="${j > S.i ? 'fut' : ''}" style="${j === 7 ? 'border-left:1px dashed var(--line-strong);' : ''}"><div class="up"><span style="height:${h / mx * 100}%"></span></div><div class="mid"></div><div class="dn"><span style="height:${a / mx * 100}%"></span></div></div>`).join('');
+  $('mom').dir = 'ltr';
+  $('shift').textContent = shift();
+
+  // stats
+  const upto = EV.slice(0, S.i + 1);
+  const cnt = (team, f) => upto.filter(y => f(y, team)).length;
+  const att = (y, t) => (['CHANCE', 'GOAL', 'VAR_CHECK', 'PENALTY_CHECK'].includes(y.event_type) && y.event_team === t) || (y.event_type === 'SAVE' && y.event_team === other(t));
+  const st = [
+    cnt(H, (y, t) => y.event_type === 'GOAL' && y.event_team === t), cnt(A, (y, t) => y.event_type === 'GOAL' && y.event_team === t),
+    cnt(H, att), cnt(A, att),
+    cnt(H, (y, t) => y.event_type === 'SAVE' && y.event_team === t), cnt(A, (y, t) => y.event_type === 'SAVE' && y.event_team === t),
+    cnt(H, (y, t) => /CARD/.test(y.event_type) && y.event_team === t), cnt(A, (y, t) => /CARD/.test(y.event_type) && y.event_team === t),
+    PR.slice(0, S.i + 1).reduce((s, v) => s + v[0], 0), PR.slice(0, S.i + 1).reduce((s, v) => s + v[1], 0)
+  ];
+  $('stats').innerHTML = `<div class="legend" style="margin-bottom:4px"><span class="lbl" style="color:var(--home)">NBR</span><span class="lbl" style="color:var(--away)">KSU</span></div>` + x.st.map((l, j) => {
+    const h = st[j * 2], a = st[j * 2 + 1], tot = h + a;
+    const bars = tot ? `<i class="h" style="flex:${h / tot}"></i><i class="a" style="flex:${a / tot}"></i>` : '<i style="flex:1;background:var(--line)"></i>';
+    return `<div class="stat"><span class="v num">${h}</span><div><div class="lbl">${esc(l)}</div><div class="bars">${bars}</div></div><span class="v a num">${a}</span></div>`;
+  }).join('');
+
+  // players
+  $('players').innerHTML = `<tr>${x.th.map((h, j) => `<th${j > 1 ? ' class="n"' : ''}>${esc(h)}</th>`).join('')}</tr>` + S.prow.map(r => {
+    const g = upto.filter(y => y.event_type === 'GOAL' && y.player === r.p).length;
+    return `<tr class="${S.player === r.p ? 'sel' : ''}" data-p="${esc(r.p)}" tabindex="0"><td>${esc(r.p)}</td><td>${code(r.t)}</td><td class="n">${g}</td><td class="n">${mine(r.p, S.i).length}</td></tr>`;
+  }).join('');
+  if (S.player) {
+    const c = card(S.player, S.i);
+    $('pfocus').innerHTML = `<strong style="color:var(--ink)">${esc(x.pfNow(S.player, mine(S.player, S.i).length))}</strong> ${esc(x.pfClear)}`;
+    $('pcard').hidden = false;
+    $('pcard').innerHTML = `<div><h3>${esc(S.player)}</h3><div class="pos">${esc(posName(c.pos))} · ${code(c.team)}</div></div>` +
+      `<div class="pgrid">${c.cells.map(([kk, v]) => `<div><b>${v}</b><span>${esc(kk === 'mins' ? x.mins : kk === 'touches' ? x.touches : kk === 'km' ? x.km : statName(kk))}</span></div>`).join('')}</div>` +
+      `<p class="src">${esc(x.synth)}</p>`;
+  } else { $('pfocus').textContent = x.pfIntro; $('pcard').hidden = true; }
+
+  // the after: the chosen voice's recap, the followed player's recap, and the moments that decided it
+  $('after').classList.toggle('on', ft);
+  if (ft) {
+    $('afterHead').textContent = `${H} ${e.home_score} – ${e.away_score} ${A}`;
+    $('afterLede').textContent = fact(e); $('afterLede').lang = S.lang; $('afterLede').dir = rtl ? 'rtl' : 'ltr';
+    $('afterThree').innerHTML = S.cmp ? fans(S.i) : (n => `<div class="fan is-${P[n].key}">${av(n, true)}<div><div style="display:flex;gap:8px;align-items:baseline"><span class="nm">${n}</span><span class="md">${x.modes[k]}</span></div>${(t => t === null ? `<p class="writing">${writing(n)}…</p>` : `<p>${esc(t)}</p>`)(lineAt(S.i, n))}</div></div>`)(who);
+    const ap = $('afterPlayer');
+    ap.hidden = !S.player;
+    if (S.player) {
+      const r = playerRecap(S.player), mm = mine(S.player, S.i);
+      const body = r ? esc(r.text) : (r === null ? `<span class="writing">${esc(writing(who))}…</span>` : mm.map(y => `${minLabel(y.minute)} ${esc(fact(y))}`).join(' '));
+      ap.innerHTML = `<div class="fan is-${P[who].key}">${av(who, true)}<div><div class="nm">${esc(x.yourPlayer(S.player))}</div><p>${body}</p></div></div>`;
+    }
+    $('keym').innerHTML = EV.filter(y => ['GOAL', 'VAR_OVERTURN', 'RED_CARD', 'SUBSTITUTION'].includes(y.event_type)).map(y => `<li><span class="num" style="color:var(--live)" dir="ltr">${minLabel(y.minute)}</span><span><span class="tag ${tag(y.event_type)[1]}">${esc(tag(y.event_type)[0])}</span></span><span ${factAttr()}>${esc(fact(y))}</span></li>`).join('');
+  }
+}
+
+function headline(e) {
+  const t = e.event_team, pl = e.player ? surname(e.player) : '', h = u().hl, sc = `${e.home_score} – ${e.away_score}`;
+  const short = n => n.split(' ')[0];
+  switch (e.event_type) {
+    case 'GOAL': return e.home_score + e.away_score === 1 ? h.ahead(pl, short(t)) : (e.home_score === e.away_score ? h.level(pl, sc) : h.makes(pl, sc));
+    case 'CHANCE': return h.chance(pl, code(t));
+    case 'SAVE': return h.save(pl, code(t));
+    case 'MOMENTUM': return h.mom(short(t));
+    case 'VAR_CHECK': return h.varc(pl);
+    case 'VAR_OVERTURN': return h.varo;
+    case 'YELLOW_CARD': return h.yellow(pl);
+    case 'RED_CARD': return h.red(pl, code(t));
+    case 'SUBSTITUTION': return h.sub(pl, short(t));
+    case 'PENALTY_CHECK': return h.pen(pl);
+    case 'FULL_TIME': {
+      if (e.home_score === e.away_score) return h.draw(sc);
+      const w = e.home_score > e.away_score ? H : A;
+      const trailed = EV.some(y => (w === H ? y.home_score < y.away_score : y.away_score < y.home_score));
+      return trailed ? h.comeback(short(w)) : h.win(short(w));
+    }
+    default: return h.opening;
+  }
+}
+function shift() {
+  const win = PR.slice(Math.max(0, S.i - 3), S.i + 1);
+  const h = win.reduce((s, v) => s + v[0], 0), a = win.reduce((s, v) => s + v[1], 0);
+  const span = `${minLabel(EV[Math.max(0, S.i - 3)].minute)} ${u().to} ${minLabel(EV[S.i].minute)}`;
+  if (h === a) return u().even(span, h);
+  return u().lead(h > a ? H : A, Math.max(h, a), Math.min(h, a), span);
+}
+
+build(); render();
+</script>
